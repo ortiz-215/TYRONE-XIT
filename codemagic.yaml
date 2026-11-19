@@ -6,8 +6,19 @@ workflows:
       xcode: 16.2
       cocoapods: default
     scripts:
-      - name: Build
+      - name: Crear proyecto Xcode
         script: |
-          echo "TYRONE XIT build"
+          mkdir -p TYRONE_XIT
+          cp ContentView.swift TYRONE_XIT/
+          cp TYRONE_XITApp.swift TYRONE_XIT/
+          cat > TYRONE_XIT/Info.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <plist version="1.0"><dict>
+          <key>CFBundleName</key><string>TYRONE XIT</string>
+          <key>CFBundleIdentifier</key><string>com.tyrone.xit</string>
+          <key>CFBundleVersion</key><string>1.0</string>
+          </dict></plist>
+          EOF
+          echo "Proyecto creado"
     artifacts:
-      - build/*
+      - TYRONE_XIT/*
