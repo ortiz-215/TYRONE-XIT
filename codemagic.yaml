@@ -4,13 +4,35 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
-      flutter: stable
       xcode: latest
-      cocoapods: default
     scripts:
-      - name: Instalar dependencias
-        script: flutter pub get
+      - name: Crear proyecto Xcode
+        script: |
+          brew install xcodegen
+          cat > project.yml << 'EOF'
+          name: TYRONE-XIT
+          options:
+            bundleIdPrefix: com.tyronexit
+          targets:
+            TYRONE-XIT:
+              type: application
+              platform: iOS
+              deploymentTarget: "16.0"
+              sources: [.]
+              info:
+                path: Info.plist
+                properties:
+                  UILaunchStoryboardName: ""
+                  UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+          EOF
+          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict><key>CFBundleDevelopmentRegion</key><string>en</string><key>CFBundleExecutable</key><string>$(EXECUTABLE_NAME)</string><key>CFBundleIdentifier</key><string>$(PRODUCT_BUNDLE_IDENTIFIER)</string><key>CFBundleInfoDictionaryVersion</key><string>6.0</string><key>CFBundleName</key><string>$(PRODUCT_NAME)</string><key>CFBundlePackageType</key><string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string><key>CFBundleShortVersionString</key><string>1.0</string><key>CFBundleVersion</key><string>1</string><key>LSRequiresIPhoneOS</key><true/><key>UIApplicationSceneManifest</key><dict><key>UIApplicationSupportsMultipleScenes</key><false/></dict><key>UILaunchStoryboardName</key><string></string><key>UIRequiredDeviceCapabilities</key><array><string>armv7</string></array><key>UISupportedInterfaceOrientations</key><array><string>UIInterfaceOrientationPortrait</string></array></dict></plist>' > Info.plist
+          xcodegen generate
       - name: Compilar IPA sin firma
-        script: flutter build ipa --no-codesign --release
+        script: |
+          xcodebuild -project TYRONE-XIT.xcodeproj -scheme TYRONE-XIT -configuration Release -sdk iphoneos -archivePath build/TYRONE-XIT.xcarchive archive CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+          APP_PATH=$(find build/TYRONE-XIT.xcarchive -name "*.app" | head -n 1)
+          mkdir -p Payload
+          cp -r "$APP_PATH" Payload/
+          zip -r TYRONE-XIT.ipa Payload
     artifacts:
-      - build/ios/ipa/*.ipa
+      - TYRONE-XIT.ipa
