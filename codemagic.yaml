@@ -1,24 +1,16 @@
 workflows:
   ios-workflow:
     name: TYRONE XIT iOS
-    max_build_duration: 60
+    max_build_duration: 120
+    instance_type: mac_mini_m1
     environment:
-      xcode: 16.2
+      flutter: stable
+      xcode: latest
       cocoapods: default
     scripts:
-      - name: Crear proyecto Xcode
-        script: |
-          mkdir -p TYRONE_XIT
-          cp ContentView.swift TYRONE_XIT/
-          cp TYRONE_XITApp.swift TYRONE_XIT/
-          cat > TYRONE_XIT/Info.plist << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <plist version="1.0"><dict>
-          <key>CFBundleName</key><string>TYRONE XIT</string>
-          <key>CFBundleIdentifier</key><string>com.tyrone.xit</string>
-          <key>CFBundleVersion</key><string>1.0</string>
-          </dict></plist>
-          EOF
-          echo "Proyecto creado"
+      - name: Instalar dependencias
+        script: flutter pub get
+      - name: Compilar IPA sin firma
+        script: flutter build ipa --no-codesign --release
     artifacts:
-      - TYRONE_XIT/*
+      - build/ios/ipa/*.ipa
